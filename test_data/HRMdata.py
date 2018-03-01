@@ -9,8 +9,8 @@ import peakutils
 class Data:
 
     """ Defines the HRMData class
-    __init__ sets None values to mean_hr_bpm, voltage_extremes, duration, _num_beats and beats
-    takes in two variable arguments - dataStr and interval
+     Takes in 4 user inputs, dataStr, interval, threshold and minDist
+     threshold and minDist are defaulted to 0.18 and 200 respectively if not specified
     :Attribute: mean_hr_bpm - avg heart rate over specified interval (double)
     :Attribute: voltage_extremes - contains min and max lead voltages of data (tuple)
     :Attribute: duration - time duration of ECG stripe (double)
@@ -20,33 +20,25 @@ class Data:
     :Attribute: interval - user-specified number of minutes to read heartbeats (double)
     :Attribute: csvDf - dataframe containing csv file
     """
-    def __init__(self, dataStr):
+    def __init__(self, dataStr='test_data1.csv', interval=None, thr=0.18, mD=200):
         logging.basicConfig(filename='hrmLog.txt', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
         with open('hrmLog.txt', 'w'):
             pass
         self.csvName = dataStr
+        self.threshold = thr
+        self.minDist = mD
         self.csvDf = None
         self.times = None
         self.volt = None
-        self.corr = None
-        self.peakIndices = None
+        self.read_csv()
+        logging.info('csv file has been read')
+        self.extract_data()
+        logging.info('voltage and time values have been extracted')
         self.voltage_extremes = None
         self.mean_hr_bpm = None
         self.duration = None
         self.num_beats = None
         self.beats = None
-
-        self.read_csv()
-        logging.info('csv file has been read')
-        self.extract_data()
-        logging.info('voltage and time values have been extracted')
-        # set times and volt
-        self.correlate()
-       # logging.info('voltage arrays have been correlated')
-        self.findPeaks()
-        self.findMeanBPM()
-
-       #self.writeJSON()
 
     def read_csv(self):
         """ Method used to extract csv file based on given string
@@ -78,7 +70,7 @@ class Data:
         lengths = range(N, math.floor(N/2), -1)
         tempCorr /= lengths
         tempCorr /= tempCorr[0]
-        self.corr = tempCorr
+        return tempCorr
 
     def writeJSON(self):
         """ Method that writes all calculated attributes into JSON format
@@ -90,12 +82,39 @@ class Data:
         json.dump(dataDict, out_file)
 
     def findPeaks(self):
-        indices = peakutils.indexes(self.corr, thres=0.18, min_dist=200)
-        self.peakIndices = indices
+        indices = peakutils.indexes(self.correlate(), thres=self.threshold, min_dist=self.minDist)
+        return indices
 
-    def findMeanBPM(self):
-        timeVals = [self.times[elem] for elem in self.peakIndices]
-        self.mean_hr_bpm = len(timeVals)*60/(timeVals[len(timeVals)-1]-timeVals[0])
-        # finds the total amount of time
+    @property
+    def mean_hr_bpm(self):
+        return self.__mean_hr_bpm
 
+    @mean_hr_bpm.setter
+    def mean_hr_bpm(self, mean_hr_bpm):
+        timeVals = [self.times[elem] for elem in self.findPeaks()]
+        self.__mean_hr_bpm = len(timeVals) * 60 / (timeVals[len(timeVals) - 1] - timeVals[0])
+
+    @property
+    def voltage_extremes(self):
+        return self.__voltage_extremes
+
+    @voltage_extremes.setter
+    def voltage_extremes(self, voltage_extremes):
+        self.__voltage_extremes = (np.min(self.volt), np.max(self.volt))
+
+    @property
+    def duration(self):
+        return self.__duration
+
+    @duration.setter
+    def duration(self, duration):
+        self.__duration = self.times[len(self.times) - 1] - self.times[0]
+
+    @property
+    def num_beats(self):
+        return self.__num_beats
+
+    @num_beats.setter
+    def num_beats(self, num_beats):
+        self.__num_beats = len(self.findPeaks())
 
