@@ -33,7 +33,6 @@ class Data:
     :attribute: beats (numpy array) - time when a beat occured
 
     """
-
     def __init__(self, dataStr, userInterval, thr=0.18, mD=200):
         logging.basicConfig(filename='hrmLog.txt', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S')
@@ -138,12 +137,18 @@ class Data:
         self.csvDf = df
 
     def extract_data(self):
-        """ Method to extract the time and voltage data points from the csv file dataframe. Normalizes voltage data
+        """ Method to extract the time and voltage data points from the csv file dataframe. Converts string values to
+        nan values, then interpolates data points. List is then normalized by subtracting the mean
         :param: self - contains the csvDf attribute used to extract the volt and times data
         """
-        self.volt = self.csvDf.Voltage.values
+        tempVolt = pd.to_numeric(self.csvDf.Voltage, errors='coerce')
+        tempTime = pd.to_numeric(self.csvDf.Time, errors='coerce')
+
+        # if there are any string values, changes them to nan
+
+        self.volt = pd.DataFrame(tempVolt).interpolate().values.ravel().tolist()
+        self.times = pd.DataFrame(tempTime).interpolate().values.ravel().tolist()
         self.volt = self.volt - np.mean(self.volt)
-        self.times = self.csvDf.Time.values
 
     def correlate(self):
         """ Method that correlates two 1D arrays and generates a correlation matrix, starting from time lag 0
