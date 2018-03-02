@@ -3,3 +3,4 @@ pandas
 sphinx
 peakutils
 pytest
+pytest-pep8
