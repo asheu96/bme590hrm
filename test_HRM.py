@@ -10,8 +10,8 @@ def test_Norm():
     totalTime = [27.775, 27.775, 39.996]
     for index, elem in enumerate(fileNames):
         tempObj = Data(dataStr=elem, userInterval=10000)
-        assert tempObj.mean_hr_bpm >= BPM[index]-5 or tempObj.mean_hr_bpm <= BPM[index]+5
-        assert tempObj.num_beats >= beats[index]-2 or tempObj.num_beats <= beats[index]+2
+        assert tempObj.mean_hr_bpm >= BPM[index]-5 and tempObj.mean_hr_bpm <= BPM[index]+5
+        assert tempObj.num_beats >= beats[index]-2 and tempObj.num_beats <= beats[index]+2
         assert tempObj.interval == totalTime[index]
 
 
@@ -63,20 +63,20 @@ def test_Abnormal():
     #fileNames = ['test_data28.csv', 'test_data30.csv', 'test_data31.csv']
 
     test1 = Data(dataStr='test_data28.csv', userInterval=10000, mD=4)
-    assert test1.mean_hr_bpm >= 124.412-10 or test1.mean_hr_bpm <= 124.412+10
-    assert test1.num_beats >= 31-4 or test1.num_beats <= 31+4
+    assert test1.mean_hr_bpm >= 124.412-10 and test1.mean_hr_bpm <= 124.412+10
+    assert test1.num_beats >= 55-4 and test1.num_beats <= 55+4
 
     test2 = Data(dataStr='test_data30.csv', userInterval=2000, mD=3)
-    assert test2.mean_hr_bpm >= 152.329-10 or test2.mean_hr_bpm <= 152.329+10
-    assert test2.num_beats >= 49-6 or test2.num_beats <= 49+6
+    assert test2.mean_hr_bpm >= 152.329-10 and test2.mean_hr_bpm <= 152.329+10
+    assert test2.num_beats >= 100-6 and test2.num_beats <= 100+6
 
     test3 = Data(dataStr='test_data31.csv', userInterval=2000, thr=0.1, mD=200) 
-    assert test3.mean_hr_bpm >= 90-10 or test3.mean_hr_bpm <= 90+10
-    assert test3.num_beats >= 17-3 or test3.num_beats <= 17+3       
+    assert test3.mean_hr_bpm >= 90-10 and test3.mean_hr_bpm <= 90+10
+    assert test3.num_beats >= 17-3 and test3.num_beats <= 17+3       
 
     test3 = Data(dataStr='test_data32.csv', userInterval=2000, thr=0.1, mD=200) 
-    assert test3.mean_hr_bpm >= 90-10 or test3.mean_hr_bpm <= 90+10
-    assert test3.num_beats >= 18-3 or test3.num_beats <= 18+3   
+    assert test3.mean_hr_bpm >= 90-10 and test3.mean_hr_bpm <= 90+10
+    assert test3.num_beats >= 18-3 and test3.num_beats <= 18+3   
 
 def test_json():
 
