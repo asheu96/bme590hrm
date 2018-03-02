@@ -24,7 +24,8 @@ def test_Inputs():
     fourth test - if min distance is not a number, raises TypeError
     fifth test - if threshold value is less than 0, raises ValueError
     sixth test - if min dist is less than 0, raises ValueError
-    seventh test - if userInterval is negative, raises TypeError
+    seventh test - if userInterval is negative, raises ValueError
+    eigth test - if userInterval is not a number, raises TypeError
     """
     from HRMdata import Data
     testObj1 = Data(dataStr='test_data1.csv', userInterval=100000)
@@ -50,7 +51,30 @@ def test_Inputs():
 
     with pytest.raises(ValueError):
         Data(dataStr='test_data1.csv', userInterval = -2).checkInterval()
-    
+
     with pytest.raises(TypeError):
-        Data(dataStr='test_data1.csv', userInterval='hello').checkInterval()
+        Data(dataStr='test_data1.csv', userInterval = 'hello').checkInterval()
+
+def test_Abnormal():
+
+    """ tests class calls with abnormal data, i.e., data with missing data or with String 
+    """
+    from HRMdata import Data
+    #fileNames = ['test_data28.csv', 'test_data30.csv', 'test_data31.csv']
+
+    test1 = Data(dataStr='test_data28.csv', userInterval=10000, mD=4)
+    assert test1.mean_hr_bpm >= 124.412-10 or test1.mean_hr_bpm <= 124.412+10
+    assert test1.num_beats >= 31-4 or test1.num_beats <= 31+4
+
+    test2 = Data(dataStr='test_data30.csv', userInterval=2000, mD=3)
+    assert test2.mean_hr_bpm >= 152.329-10 or test2.mean_hr_bpm <= 152.329+10
+    assert test2.num_beats >= 49-6 or test2.num_beats <= 49+6
+
+    test3 = Data(dataStr='test_data31.csv', userInterval=2000, thr=0.1, mD=200) 
+    assert test3.mean_hr_bpm >= 90-10 or test3.mean_hr_bpm <= 90+10
+    assert test3.num_beats >= 17-3 or test3.num_beats <= 17+3       
+
+    test3 = Data(dataStr='test_data32.csv', userInterval=2000, thr=0.1, mD=200) 
+    assert test3.mean_hr_bpm >= 90-10 or test3.mean_hr_bpm <= 90+10
+    assert test3.num_beats >= 18-3 or test3.num_beats <= 18+3         
 

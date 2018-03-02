@@ -12,7 +12,6 @@ try:
 except ImportError:
     print('Could not import logging')
 
-
 class Data:
     """ Defines the HRMData class
      Takes in 4 user inputs, dataStr, interval, threshold and minDist
@@ -69,6 +68,7 @@ class Data:
             self.threshold + 25
         except TypeError:
             print('Threshold must be a number')
+            raise TypeError
             return None
 
         if self.threshold <= 0:
@@ -86,6 +86,7 @@ class Data:
         except TypeError:
             print('Input must be a number')
             logging.warning('Input entered was not a number')
+            raise TypeError
             return None
         return
 
@@ -94,10 +95,13 @@ class Data:
             self.minDist + 25
         except TypeError:
             print('Minimum distance must be a number')
+            raise TypeError
             return None
+
         if self.minDist <= 0:
             print('Minimum distance between peaks must be greater than 0')
             logging.debug('Min distance between peaks must be greater than 0')
+            raise ValueError
             return None
         return
 
@@ -119,10 +123,11 @@ class Data:
         :raises: FileNotFoundError - if input file name could no be found
         """
         try:
-            self.csvName.upper()
+            self.csvName + 'hello'
         except TypeError:
             print('Input file name must be a String type')
             logging.warning('Input file entered was not a String type')
+            raise TypeError('Input file entered was not a String type')
             return None
 
         try:
@@ -130,6 +135,7 @@ class Data:
         except FileNotFoundError:
             print('No file with given filename found')
             logging.debug('No file with given filename found')
+            raise FileNotFoundError('No file with given filename found')
             return None
 
         headers = ['Time', 'Voltage']
@@ -209,7 +215,6 @@ class Data:
             logging.error('Could not import peakutils')
 
         self.minDist = int(self.minDist)
-
         indices = peakutils.indexes(self.correlate(), thres=self.threshold, min_dist=self.minDist)
         return indices
 
@@ -244,7 +249,7 @@ class Data:
 
     @num_beats.setter
     def num_beats(self, num_beats):
-        self.__num_beats = len(self.findPeaks())
+        self.__num_beats = len(self.findPeaks())*2
 
     @property
     def beats(self):
@@ -254,5 +259,9 @@ class Data:
     def beats(self, beats):
         corrIndex = self.findPeaks()
         stepSize = self.times[1] - self.times[0]
-        self.__beats = [elem * stepSize for elem in corrIndex]
+        peakDiff = corrIndex[1]-corrIndex[0]
+        beatIndex = []
+        for index in range(self.num_beats):
+            beatIndex.append(index*peakDiff+corrIndex[0])
+        self.__beats = [elem * stepSize for elem in beatIndex]
 
