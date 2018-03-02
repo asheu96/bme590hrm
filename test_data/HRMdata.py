@@ -13,6 +13,7 @@ except ImportError:
     print('Could not import logging')
 
 class Data:
+
     """ Defines the HRMData class
      Takes in 4 user inputs, dataStr, interval, threshold and minDist
      threshold and minDist are defaulted to 0.18 and 200 respectively if not specified
@@ -62,8 +63,17 @@ class Data:
         self.num_beats = None
         self.beats = None
         logging.info('All attributes have been computed')
+        self.writeJSON()
+        logging.info('json file has been written')
 
     def checkThres(self):
+
+        """ Method to check if user input threshold is valid
+        :param: self - contains the threshold attribute used
+        :raises: TypeError - if input threshold is not a number
+        :raises: ValueError - if input threshold is less than 0
+        :return: None
+        """
         try:
             self.threshold + 25
         except TypeError:
@@ -75,9 +85,17 @@ class Data:
             print('Threshold must be greater than 0')
             logging.debug('Threshold input must be greater than 0')
             raise ValueError('Threshold input must be greater than 0')
+        logging.info('Input threshold has been checked')
         return
 
     def checkInterval(self):
+
+        """ Method to check if user input threshold is valid
+        :param: self - contains the interval attribute
+        :raises: TypeError - if input interval is not a number
+        :raises: ValueError - if input interval is less than 0
+        :return: None
+        """
         if self.userInterval < 0:
             logging.warning('Cannot input negative interval of time')
             raise ValueError('Cannot input negative interval of time')
@@ -88,9 +106,17 @@ class Data:
             logging.warning('Input entered was not a number')
             raise TypeError
             return None
+        logging.info('Input interval has been checked')
         return
 
     def checkMD(self):
+
+        """ Method to check if user input threshold is valid
+        :param: self - contains the min dist attribute
+        :raises: TypeError - if input min dist is not a number
+        :raises: ValueError - if input min dist is less than 0
+        :return: None
+        """
         try:
             self.minDist + 25
         except TypeError:
@@ -103,6 +129,7 @@ class Data:
             logging.debug('Min distance between peaks must be greater than 0')
             raise ValueError
             return None
+        logging.info('Min dist input has been checked')
         return
 
     @property
@@ -117,6 +144,7 @@ class Data:
             self.__interval = self.userInterval
 
     def read_csv(self):
+
         """ Method used to extract csv file based on given string
         :param: self - contains csvName attribute that contains the name of the file to be read
         :raises: TypeError - if input was not a String file
@@ -143,6 +171,7 @@ class Data:
         self.csvDf = df
 
     def extract_data(self):
+
         """ Method to extract the time and voltage data points from the csv file dataframe. Converts string values to
         nan values, then interpolates data points. List is then normalized by subtracting the mean
         :param: self - contains the csvDf attribute used to extract the volt and times data
@@ -157,6 +186,7 @@ class Data:
         self.volt = self.volt - np.mean(self.volt)
 
     def correlate(self):
+
         """ Method that correlates two 1D arrays and generates a correlation matrix, starting from time lag 0
         :param: self - contains the voltage vectors used to correlate
         :return: corr - numpy array of the correlation constants, starting from time lag 0
@@ -177,6 +207,7 @@ class Data:
         return tempCorr
 
     def modInterval(self):
+
         """ Method that modulates the voltage interval based on user input
         """
         index = 0
@@ -187,6 +218,7 @@ class Data:
         self.volt = self.volt[0:index]
 
     def writeJSON(self):
+
         """ Method that writes all calculated attributes into JSON format
         :writes: JSON files with all calculated attributes
         :raises: ImportError - if json module cannot be loaded from Python
@@ -197,12 +229,14 @@ class Data:
             print('Could not import json module')
             logging.error('Could not import Python module of json')
 
-        out_file = open(self.csvfile + '.json', 'w')
+        out_file = open(self.csvName[0:len(self.csvName)-4] + '.json', 'w')
         dataDict = {'Mean HR (BPM)': self.mean_hr_bpm, 'Voltage Extremes': self.voltage_extremes,
                     'Duration': self.duration, 'Number of Beats': self.num_beats, 'Beats': self.beats}
         json.dump(dataDict, out_file)
+        return True
 
     def findPeaks(self):
+
         """ Method that finds the maximum peak indices of the correlated voltage data
         :param: self - contains the voltage vectors used to correlate
         :return: indices - array of the indices at which peaks occur
@@ -224,6 +258,10 @@ class Data:
 
     @mean_hr_bpm.setter
     def mean_hr_bpm(self, mean_hr_bpm):
+
+        """ Setter method for the mean_hr_bpm attribute
+        :param mean_hr_bpm: Average heart rate beats per minute
+        """
         timeVals = [self.times[elem] for elem in self.findPeaks()]
         self.__mean_hr_bpm = len(timeVals) * 60 / (timeVals[len(timeVals) - 1] - timeVals[0])
 
@@ -233,6 +271,10 @@ class Data:
 
     @voltage_extremes.setter
     def voltage_extremes(self, voltage_extremes):
+
+        """ Setter method for the voltage_extremes attribute
+        :param voltage_extremes: tuple of min and max voltages in given interval
+        """
         self.__voltage_extremes = (np.min(self.volt), np.max(self.volt))
 
     @property
@@ -249,6 +291,10 @@ class Data:
 
     @num_beats.setter
     def num_beats(self, num_beats):
+
+        """ Setter method for the num_beats attribute
+        :param num_beats: int value of number of beats in given interval
+        """
         self.__num_beats = len(self.findPeaks())*2
 
     @property
@@ -257,6 +303,10 @@ class Data:
 
     @beats.setter
     def beats(self, beats):
+
+        """ Setter method for the beats attribute
+        :param: beats: numpy array of all beats in given interval
+        """
         corrIndex = self.findPeaks()
         stepSize = self.times[1] - self.times[0]
         peakDiff = corrIndex[1]-corrIndex[0]

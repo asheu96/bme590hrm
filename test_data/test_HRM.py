@@ -6,7 +6,7 @@ def test_Norm():
     from HRMdata import Data
     fileNames = ['test_data1.csv', 'test_data3.csv', 'test_data23.csv']
     BPM = [78.35, 72.417, 60.832]
-    beats = [16, 16, 18]
+    beats = [32, 32, 35]
     totalTime = [27.775, 27.775, 39.996]
     for index, elem in enumerate(fileNames):
         tempObj = Data(dataStr=elem, userInterval=10000)
@@ -76,5 +76,17 @@ def test_Abnormal():
 
     test3 = Data(dataStr='test_data32.csv', userInterval=2000, thr=0.1, mD=200) 
     assert test3.mean_hr_bpm >= 90-10 or test3.mean_hr_bpm <= 90+10
-    assert test3.num_beats >= 18-3 or test3.num_beats <= 18+3         
+    assert test3.num_beats >= 18-3 or test3.num_beats <= 18+3   
+
+def test_json():
+
+    """ tests whether JSON file is written
+    """
+    from HRMdata import Data
+    jsonTest = Data(dataStr='test_data1.csv', userInterval=10000)
+    assert jsonTest.writeJSON() == True
+
+
+
+
 
